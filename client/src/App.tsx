@@ -1,5 +1,6 @@
 import Home from "./pages/Home";
+import MangaMenu from "./pages/MangaMenu";
 
 export default function App() {
-  return <Home />;
+  return window.location.pathname === "/manga-menu" ? <MangaMenu /> : <Home />;
 }
