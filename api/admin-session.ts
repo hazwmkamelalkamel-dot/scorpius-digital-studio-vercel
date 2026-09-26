@@ -3,5 +3,7 @@ function verifyAdminCookie(cookie: string | undefined) { const token = cookie?.s
 export default function handler(req: Request) {
   const headers = { "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" };
   if (req.method !== "GET") return Response.json({ ok: false, error: "method_not_allowed" }, { status: 405, headers });
-  return Response.json({ ok: verifyAdminCookie(req.headers.get("cookie") || undefined) }, { headers });
+  const requestHeaders = req.headers as Headers & { cookie?: string };
+  const cookie = typeof requestHeaders.get === "function" ? requestHeaders.get("cookie") : requestHeaders.cookie;
+  return Response.json({ ok: verifyAdminCookie(cookie || undefined) }, { headers });
 }
