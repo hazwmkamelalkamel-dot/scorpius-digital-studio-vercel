@@ -11,7 +11,7 @@ const services = [
 const team = [
   { initials: "SC", name: "Hazem Mohammed Kamel", role: "Founder · Full-Stack Developer", copy: "يقود الرؤية ويجمع بين المنتج، الكود، والتصميم في حل واحد." },
   { initials: "A", name: "Abdulrahman", role: "Senior Software Engineer", copy: "مبرمج محترف بخبرة 5 سنين في بناء حلول مستقرة وسريعة." },
-  { initials: "M", name: "Moaz", role: "Graphic Designer", copy: "مصمم جرافيكس بخبرة 6 سنين في بناء هويات لها حضور." },
+  { initials: "AA", name: "Ali Ahmed", role: "Professional Programmer · Graphic Designer", copy: "مبرمج محترف وجرافيك ديزاينر يجمع بين بناء الحلول الرقمية وصناعة هويات بصرية لها حضور." },
   { initials: "MT", name: "Maryam Tarek", role: "Websites Developer", copy: "مبرمجة مواقع تهتم بالتفاصيل، سهولة الاستخدام، وبناء تجارب ويب واضحة وسريعة." },
 ];
 const faqs = [
