@@ -1,4 +1,4 @@
-import { dbRequest, noStore, parseBody, type ApiRequest, type ApiResponse } from "./_lib/supabase";
+import { dbRequest, noStore, parseBody, type ApiRequest, type ApiResponse } from "./_lib/supabase.js";
 
 type BookingInput = { customer_name?: unknown; customer_phone?: unknown; service_id?: unknown; barber_id?: unknown; haircut_style_id?: unknown; appointment_at?: unknown; notes?: unknown };
 const text = (value: unknown, max: number) => typeof value === "string" ? value.trim().slice(0, max) : "";
