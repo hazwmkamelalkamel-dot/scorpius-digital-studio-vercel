@@ -40,9 +40,7 @@ export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [faqOpen, setFaqOpen] = useState(0);
   const [form, setForm] = useState({ name: "", service: "منتج رقمي", message: "" });
-  const [reviews, setReviews] = useState<ClientReview[]>(() => {
-    try { return JSON.parse(localStorage.getItem("scorpius-client-reviews") || "[]"); } catch { return []; }
-  });
+  const [reviews, setReviews] = useState<ClientReview[]>([]);
   const [reviewForm, setReviewForm] = useState({ name: "", role: "عميل SCORPIUS", quote: "", rating: 5 });
   const [reviewSent, setReviewSent] = useState(false);
   useEffect(() => {
