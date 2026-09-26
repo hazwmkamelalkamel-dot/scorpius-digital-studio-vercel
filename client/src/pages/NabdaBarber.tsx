@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, CalendarDays, Check, Clock3, Instagram, MapPin, Phone, Scissors, ShieldCheck, Star } from "lucide-react";
+import { createBooking, getBookedSlots, getNabdaCatalog, supabaseConfigured, trackVisit } from "../lib/supabase";
 
 type Service = { id: number; name: string; description: string; durationMinutes: number; priceCents: number; accent: string };
 type Barber = { id: number; name: string; title: string; bio: string; imageUrl?: string | null };
@@ -47,19 +48,41 @@ export default function NabdaBarber() {
   const [authPassword, setAuthPassword] = useState("");
   const [authError, setAuthError] = useState("");
   const [localBookings, setLocalBookings] = useState<any[]>(() => { try { return JSON.parse(localStorage.getItem("nabda-bookings") || "[]"); } catch { return []; } });
+  const [catalog, setCatalog] = useState<{ services: Service[]; barbers: Barber[]; haircuts: Haircut[] }>({ services: fallbackServices, barbers: fallbackBarbers, haircuts: fallbackHaircuts });
+  const [bookedHours, setBookedHours] = useState<number[]>([]);
   const posterClicks = useRef(0);
   const posterTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const services = fallbackServices;
-  const barbers = fallbackBarbers;
-  const haircuts = fallbackHaircuts;
+  const services = catalog.services;
+  const barbers = catalog.barbers;
+  const haircuts = catalog.haircuts;
   const userQuery = { data: customerSession ? { name: customerSession.name, phone: customerSession.phone } : null };
-  const appointmentsQuery = { data: [] as any[], refetch: () => Promise.resolve() };
-  const visitMutation = { mutate: (_input: unknown) => undefined };
-  useEffect(() => { visitMutation.mutate({ path: window.location.pathname }); }, []);
+  const appointmentsQuery = { data: bookedHours.map((hour) => ({ appointment: { appointmentAt: `${selectedDate.toISOString().slice(0, 10)}T${String(hour).padStart(2, "0")}:00:00` } })), refetch: () => Promise.resolve() };
+  useEffect(() => {
+    void trackVisit(window.location.pathname);
+    if (supabaseConfigured) void getNabdaCatalog().then((data) => setCatalog({
+      services: data.services.map((row) => ({ id: row.id, name: row.name, description: row.description, durationMinutes: row.duration_minutes, priceCents: row.price_cents, accent: row.accent })),
+      barbers: data.barbers.map((row) => ({ id: row.id, name: row.name, title: row.title, bio: row.bio, imageUrl: row.image_url })),
+      haircuts: data.haircuts.map((row) => ({ id: row.id, name: row.name, description: row.description, imageUrl: row.image_url })),
+    })).catch(() => undefined);
+  }, []);
+  useEffect(() => {
+    if (!supabaseConfigured || !selectedBarber) return;
+    const from = new Date(selectedDate); const to = new Date(selectedDate); to.setDate(to.getDate() + 1);
+    void getBookedSlots(from.toISOString(), to.toISOString(), selectedBarber).then((rows) => setBookedHours(rows.map((row) => new Date(row.appointment_at).getHours()))).catch(() => setBookedHours([]));
+  }, [selectedDate, selectedBarber]);
   useEffect(() => { if (selectedService === null && services[0]) setSelectedService(services[0].id); if (selectedBarber === null && barbers[0]) setSelectedBarber(barbers[0].id); if (selectedHaircut === null && haircuts[0]) setSelectedHaircut(haircuts[0].id); }, [services, barbers, haircuts, selectedService, selectedBarber, selectedHaircut]);
   useEffect(() => { if (userQuery.data?.name) setCustomerName(userQuery.data.name); if (userQuery.data?.phone) setCustomerPhone(userQuery.data.phone); }, [userQuery.data]);
   const dateRange = useMemo(() => ({ from: selectedDate.getTime(), to: selectedDate.getTime() + 24 * 60 * 60 * 1000 }), [selectedDate]);
-  const createAppointment = { isPending: false, error: null as any, mutate: (_input: unknown) => { const time = selectedTime ? timeLabel(selectedTime) : ""; const next = { customerName, customerPhone, service: activeService?.name, barber: activeBarber?.name, haircut: activeHaircut?.name, time, createdAt: new Date().toISOString() }; const updated = [next, ...localBookings]; setLocalBookings(updated); localStorage.setItem("nabda-bookings", JSON.stringify(updated)); setBooked({ time, date: selectedDate.toLocaleDateString("ar-EG", { weekday: "long", day: "numeric", month: "long" }) }); setSelectedTime(null); setNotes(""); appointmentsQuery.refetch(); } };
+  const [bookingPending, setBookingPending] = useState(false);
+  const [bookingError, setBookingError] = useState<string | null>(null);
+  const createAppointment = { isPending: bookingPending, error: bookingError ? { message: bookingError } : null as any, mutate: async (input: { serviceId: number; barberId: number; haircutStyleId: number; customerName: string; customerPhone: string; notes?: string; appointmentAt: number }) => {
+    setBookingPending(true); setBookingError(null);
+    try {
+      if (supabaseConfigured) await createBooking({ customer_name: input.customerName.trim(), customer_phone: input.customerPhone.trim(), service_id: input.serviceId, barber_id: input.barberId, haircut_style_id: input.haircutStyleId, notes: input.notes, appointment_at: new Date(input.appointmentAt).toISOString() });
+      const time = selectedTime ? timeLabel(selectedTime) : ""; const next = { customerName, customerPhone, service: activeService?.name, barber: activeBarber?.name, haircut: activeHaircut?.name, time, createdAt: new Date().toISOString() }; const updated = [next, ...localBookings]; setLocalBookings(updated); if (!supabaseConfigured) localStorage.setItem("nabda-bookings", JSON.stringify(updated)); setBooked({ time, date: selectedDate.toLocaleDateString("ar-EG", { weekday: "long", day: "numeric", month: "long" }) }); setSelectedTime(null); setNotes(""); await appointmentsQuery.refetch();
+    } catch { setBookingError("الميعاد اتاخد أو تعذر حفظ الحجز، جرّب ميعادًا آخر."); }
+    finally { setBookingPending(false); }
+  } };
   const createAppointmentSuccess = () => { const time = selectedTime ? timeLabel(selectedTime) : ""; setBooked({ time, date: selectedDate.toLocaleDateString("ar-EG", { weekday: "long", day: "numeric", month: "long" }) }); setSelectedTime(null); setNotes(""); appointmentsQuery.refetch(); };
   const bookedTimes = useMemo(() => new Set((appointmentsQuery.data ?? []).map((row: any) => new Date(row.appointment.appointmentAt).getHours())), [appointmentsQuery.data]);
   const dates = useMemo(() => Array.from({ length: 7 }, (_, index) => { const date = new Date(); date.setHours(0, 0, 0, 0); date.setDate(date.getDate() + index); return date; }), []);
