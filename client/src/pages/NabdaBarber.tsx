@@ -14,9 +14,9 @@ const fallbackBarbers: Barber[] = [
   { id: 2, name: "يوسف", title: "Style Barber", bio: "بيحب التفاصيل والقصات الكلاسيك العصرية.", imageUrl: "https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&w=900&q=85" },
 ];
 const fallbackHaircuts: Haircut[] = [
-  { id: 1, name: "لو فِيد · Low Fade", description: "تدرّج هادي ونظيف يناسب كل يوم.", imageUrl: "/nabda-low-fade.svg" },
-  { id: 2, name: "تكستشر كروب · Textured Crop", description: "حركة وملمس للوك عصري.", imageUrl: "/nabda-textured-crop.svg" },
-  { id: 3, name: "سايد بارت كلاسيك · Side Part", description: "ستايل كلاسيك مرتب بتفاصيل حادة.", imageUrl: "/nabda-classic-side-part.svg" },
+  { id: 1, name: "لو فِيد · Low Fade", description: "تدرّج هادي ونظيف يناسب كل يوم.", imageUrl: "/nabda-low-fade.jpg" },
+  { id: 2, name: "تكستشر كروب · Textured Crop", description: "حركة وملمس للوك عصري.", imageUrl: "/nabda-textured-crop.jpg" },
+  { id: 3, name: "سايد بارت كلاسيك · Side Part", description: "ستايل كلاسيك مرتب بتفاصيل حادة.", imageUrl: "/nabda-classic-side-part.jpg" },
 ];
 const hourSlots = [11, 12, 13, 14, 15, 16, 17, 18, 19];
 const money = (cents: number) => `${Math.round(cents / 100)} ج.م`;
