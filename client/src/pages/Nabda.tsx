@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, Bell, CalendarDays, Check, ChevronLeft, Clock3, LockKeyhole, MessageCircle, MoreHorizontal, Plus, Search, Sparkles, UserRound, Users, X } from "lucide-react";
 
-const ADMIN_EMAIL = "yyh123456h@gmail.com";
-const ADMIN_PASSWORD = "123456nabda";
 const services = [
   { name: "قصّة شعر كلاسيك", duration: "45 دقيقة", price: "180 ج.م", color: "lime" },
   { name: "قصّة + ذقن", duration: "60 دقيقة", price: "260 ج.م", color: "violet" },
@@ -47,7 +45,7 @@ export default function Nabda() {
 
   useEffect(() => { if (customer) localStorage.setItem("nabda-customer", customer); }, [customer]);
   const secretClick = () => { secretClicks.current += 1; if (secretTimer.current) clearTimeout(secretTimer.current); secretTimer.current = setTimeout(() => { secretClicks.current = 0; }, 1300); if (secretClicks.current === 5) { secretClicks.current = 0; setAdminOpen(true); setAuthError(""); } };
-  const submitAuth = (event: React.FormEvent) => { event.preventDefault(); setAuthError(""); if (adminOpen) { if (email.trim().toLowerCase() !== ADMIN_EMAIL || password !== ADMIN_PASSWORD) return setAuthError("الإيميل أو كلمة المرور غير صحيحة"); setAdminUnlocked(true); setAdminOpen(false); setView("dashboard"); return; } if (authMode === "register") { if (!name.trim() || phone.trim().length < 7) return setAuthError("اكتب الاسم ورقم موبايل صحيح"); setCustomer(name.trim()); setAuthOpen(false); } else { const saved = localStorage.getItem("nabda-customer-name") || name.trim(); if (!saved || password.length < 6) return setAuthError("اكتب الاسم وكلمة المرور للتجربة"); setCustomer(saved); setAuthOpen(false); } };
+  const submitAuth = async (event: React.FormEvent) => { event.preventDefault(); setAuthError(""); if (adminOpen) { try { const response = await fetch("/api/admin-login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, password }) }); if (!response.ok) throw new Error(); setAdminUnlocked(true); setAdminOpen(false); setView("dashboard"); } catch { setAuthError("تعذر تسجيل الدخول أو البيانات غير صحيحة"); } return; } if (authMode === "register") { if (!name.trim() || phone.trim().length < 7) return setAuthError("اكتب الاسم ورقم موبايل صحيح"); setCustomer(name.trim()); setAuthOpen(false); } else { const saved = localStorage.getItem("nabda-customer-name") || name.trim(); if (!saved || password.length < 6) return setAuthError("اكتب الاسم وكلمة المرور للتجربة"); setCustomer(saved); setAuthOpen(false); } };
   const submitBooking = () => { if (!customer) return setAuthOpen(true); const next = { time: selectedTime, name: customer, service: selectedService, status: "جديد", tone: "violet", barberName: customBarberName.trim() || "لم يحدد", barberImage: customBarberImage || undefined }; const updated = [next, ...bookings]; setBookings(updated); localStorage.setItem("nabda-bookings", JSON.stringify(updated)); setBooked(true); };
   const signOut = () => { setCustomer(""); localStorage.removeItem("nabda-customer"); setAdminUnlocked(false); };
 
