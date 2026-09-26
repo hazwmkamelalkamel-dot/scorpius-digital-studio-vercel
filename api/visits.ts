@@ -1,4 +1,4 @@
-import { dbRequest, noStore, parseBody, type ApiRequest, type ApiResponse } from "./_supabase";
+import { dbRequest, noStore, parseBody, type ApiRequest, type ApiResponse } from "./_lib/supabase";
 
 export default async function handler(req: ApiRequest, res: ApiResponse) {
   noStore(res);

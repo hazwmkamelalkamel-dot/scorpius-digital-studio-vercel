@@ -1,4 +1,4 @@
-import { dbRequest, noStore, parseBody, type ApiRequest, type ApiResponse } from "./_supabase";
+import { dbRequest, noStore, parseBody, type ApiRequest, type ApiResponse } from "./_lib/supabase";
 
 type ReviewInput = { name?: unknown; role?: unknown; quote?: unknown; rating?: unknown };
 const text = (value: unknown, max: number) => typeof value === "string" ? value.trim().slice(0, max) : "";
