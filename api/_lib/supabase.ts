@@ -11,10 +11,16 @@ export async function dbRequest<T>(path: string, init: RequestInit = {}): Promis
   const base = url();
   const key = serviceKey();
   if (!base || !key) throw new Error("database_not_configured");
-  const response = await fetch(`${base}/rest/v1/${path}`, {
-    ...init,
-    headers: { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json", Prefer: "return=representation", ...(init.headers || {}) },
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8000);
+  let response: Response;
+  try {
+    response = await fetch(`${base}/rest/v1/${path}`, {
+      ...init,
+      signal: controller.signal,
+      headers: { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json", Prefer: "return=representation", ...(init.headers || {}) },
+    });
+  } finally { clearTimeout(timer); }
   if (!response.ok) throw new Error(`database_${response.status}`);
   if (response.status === 204) return undefined as T;
   return response.json() as Promise<T>;
