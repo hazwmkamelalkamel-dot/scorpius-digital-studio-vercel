@@ -20,10 +20,13 @@ export async function dbRequest<T>(path: string, init: RequestInit = {}): Promis
       signal: controller.signal,
       headers: { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json", Prefer: "return=representation", ...(init.headers || {}) },
     });
+    if (!response.ok) throw new Error(`database_${response.status}`);
+    if (response.status === 204) return undefined as T;
+    return await Promise.race([
+      response.json() as Promise<T>,
+      new Promise<T>((_, reject) => setTimeout(() => reject(new Error("database_timeout")), 8000)),
+    ]);
   } finally { clearTimeout(timer); }
-  if (!response.ok) throw new Error(`database_${response.status}`);
-  if (response.status === 204) return undefined as T;
-  return response.json() as Promise<T>;
 }
 
 export function parseBody<T>(req: ApiRequest): T {
