@@ -4,6 +4,14 @@
   "buildCommand": "pnpm run build",
   "installCommand": "pnpm install --frozen-lockfile",
   "outputDirectory": "dist",
+  "redirects": [
+    { "source": "/nova-cafe/menu", "destination": "https://cafe-nova-pro.vercel.app/menu", "permanent": true },
+    { "source": "/nova-cafe/reserve", "destination": "https://cafe-nova-pro.vercel.app/reservations", "permanent": true },
+    { "source": "/nova-cafe/qr-menu", "destination": "https://cafe-nova-pro.vercel.app/qr", "permanent": true },
+    { "source": "/nova-cafe/admin", "destination": "https://cafe-nova-pro.vercel.app/auth", "permanent": true },
+    { "source": "/nova-cafe/:path*", "destination": "https://cafe-nova-pro.vercel.app/", "permanent": true },
+    { "source": "/nova-cafe", "destination": "https://cafe-nova-pro.vercel.app/", "permanent": true }
+  ],
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ],
